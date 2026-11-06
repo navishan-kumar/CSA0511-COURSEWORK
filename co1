@@ -1,0 +1,1229 @@
+mysql> CREATE DATABASE meridian_museum;
+Query OK, 1 row affected (0.192 sec)
+
+mysql> USE meridian_museum;
+Database changed
+mysql> CREATE TABLE Lender_A (
+    ->     LenderID INT PRIMARY KEY,
+    ->     LenderName VARCHAR(100)
+    -> );
+Query OK, 0 rows affected (0.533 sec)
+
+mysql>
+mysql> CREATE TABLE Artifact_A (
+    ->     ArtifactID INT PRIMARY KEY,
+    ->     ArtifactName VARCHAR(100)
+    -> );
+Query OK, 0 rows affected (0.245 sec)
+
+mysql>
+mysql> CREATE TABLE Borrowing_A (
+    ->     LenderID INT,
+    ->     ArtifactID INT,
+    ->     StartDate DATE,
+    ->     DueDate DATE,
+    ->     ReturnDate DATE,
+    ->     PRIMARY KEY (LenderID, ArtifactID, StartDate),
+    ->     FOREIGN KEY (LenderID) REFERENCES Lender_A(LenderID),
+    ->     FOREIGN KEY (ArtifactID) REFERENCES Artifact_A(ArtifactID)
+    -> );
+Query OK, 0 rows affected (0.880 sec)
+
+mysql> CREATE TABLE Loan_B (
+    ->     LoanID INT PRIMARY KEY,
+    ->     LenderID INT,
+    ->     StartDate DATE,
+    ->     DueDate DATE,
+    ->     FOREIGN KEY (LenderID) REFERENCES Lender_A(LenderID)
+    -> );
+Query OK, 0 rows affected (0.782 sec)
+
+mysql> CREATE TABLE Person (
+    ->     PersonID INT PRIMARY KEY,
+    ->     PersonName VARCHAR(100),
+    ->     Email VARCHAR(100)
+    -> );
+Query OK, 0 rows affected (0.654 sec)
+
+mysql>
+mysql> CREATE TABLE Employee (
+    ->     EmployeeID INT PRIMARY KEY,
+    ->     PersonID INT UNIQUE,
+    ->     Role VARCHAR(30),
+    ->     FOREIGN KEY (PersonID) REFERENCES Person(PersonID)
+    -> );
+Query OK, 0 rows affected (0.702 sec)
+
+mysql> CREATE TABLE Lender (
+    ->     LenderID INT PRIMARY KEY AUTO_INCREMENT,
+    ->     LenderName VARCHAR(100) NOT NULL,
+    ->     Email VARCHAR(100),
+    ->     Phone VARCHAR(20)
+    -> );
+Query OK, 0 rows affected (0.676 sec)
+
+mysql>
+mysql> CREATE TABLE Artifact (
+    ->     ArtifactID INT PRIMARY KEY AUTO_INCREMENT,
+    ->     AccessionNo VARCHAR(50) UNIQUE,
+    ->     ArtifactName VARCHAR(100),
+    ->     CollectionType VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.292 sec)
+
+mysql>
+mysql> CREATE TABLE Loan (
+    ->     LoanID INT PRIMARY KEY AUTO_INCREMENT,
+    ->     LenderID INT NOT NULL,
+    ->     StartDate DATE,
+    ->     DueDate DATE,
+    ->     ReturnDate DATE,
+    ->     FOREIGN KEY (LenderID) REFERENCES Lender(LenderID)
+    -> );
+Query OK, 0 rows affected (0.301 sec)
+
+mysql>
+mysql> CREATE TABLE Exhibition (
+    ->     ExhibitionID INT PRIMARY KEY AUTO_INCREMENT,
+    ->     ExhibitionName VARCHAR(100)
+    -> );
+Query OK, 0 rows affected (0.184 sec)
+
+mysql> CREATE TABLE Loan_Object (
+    ->     LoanID INT,
+    ->     ArtifactID INT,
+    ->     DeclaredValue DECIMAL(12,2),
+    ->     PRIMARY KEY (LoanID, ArtifactID),
+    ->     FOREIGN KEY (LoanID) REFERENCES Loan(LoanID),
+    ->     FOREIGN KEY (ArtifactID) REFERENCES Artifact(ArtifactID)
+    -> );
+Query OK, 0 rows affected (0.425 sec)
+
+mysql>
+mysql> CREATE TABLE Condition_Report (
+    ->     ReportID INT PRIMARY KEY AUTO_INCREMENT,
+    ->     LoanID INT,
+    ->     ArtifactID INT,
+    ->     ReportDate DATE,
+    ->     Findings VARCHAR(500),
+    ->     FOREIGN KEY (LoanID, ArtifactID)
+    ->         REFERENCES Loan_Object(LoanID, ArtifactID)
+    -> );
+Query OK, 0 rows affected (0.254 sec)
+
+mysql> CREATE TABLE Employee (
+    ->     EmployeeID INT PRIMARY KEY AUTO_INCREMENT,
+    ->     EmployeeName VARCHAR(100),
+    ->     Role VARCHAR(30)
+    -> );
+ERROR 1050 (42S01): Table 'employee' already exists
+mysql>
+mysql> CREATE TABLE Curator (
+    ->     CuratorID INT PRIMARY KEY,
+    ->     Specialty VARCHAR(100),
+    ->     FOREIGN KEY (CuratorID)
+    ->         REFERENCES Employee(EmployeeID)
+    -> );
+Query OK, 0 rows affected (0.210 sec)
+
+mysql>
+mysql> CREATE TABLE Registrar (
+    ->     RegistrarID INT PRIMARY KEY,
+    ->     AuthorizationLevel VARCHAR(50),
+    ->     FOREIGN KEY (RegistrarID)
+    ->         REFERENCES Employee(EmployeeID)
+    -> );
+Query OK, 0 rows affected (0.290 sec)
+
+mysql> CREATE TABLE Person (
+    ->     PersonID INT PRIMARY KEY AUTO_INCREMENT,
+    ->     PersonName VARCHAR(100),
+    ->     Email VARCHAR(100)
+    -> );
+ERROR 1050 (42S01): Table 'person' already exists
+mysql>
+mysql> CREATE TABLE Person_Lender (
+    ->     LenderID INT PRIMARY KEY AUTO_INCREMENT,
+    ->     PersonID INT UNIQUE,
+    ->     FOREIGN KEY (PersonID)
+    ->         REFERENCES Person(PersonID)
+    -> );
+Query OK, 0 rows affected (0.708 sec)
+
+mysql>
+mysql> CREATE TABLE Person_Employee (
+    ->     EmployeeID INT PRIMARY KEY AUTO_INCREMENT,
+    ->     PersonID INT UNIQUE,
+    ->     Role ENUM('CURATOR','REGISTRAR'),
+    ->     FOREIGN KEY (PersonID)
+    ->         REFERENCES Person(PersonID)
+    -> );
+Query OK, 0 rows affected (0.313 sec)
+
+mysql> CREATE TABLE Display_Slot (
+    ->     ExhibitionID INT,
+    ->     SlotNo INT,
+    ->     Gallery VARCHAR(100),
+    ->     Position VARCHAR(100),
+    ->     PRIMARY KEY (ExhibitionID, SlotNo),
+    ->     FOREIGN KEY (ExhibitionID)
+    ->         REFERENCES Exhibition(ExhibitionID)
+    -> );
+Query OK, 0 rows affected (0.671 sec)
+
+mysql> CREATE TABLE Lender_Phone (
+    ->     LenderID INT,
+    ->     PhoneNo VARCHAR(20),
+    ->     PRIMARY KEY (LenderID, PhoneNo),
+    ->     FOREIGN KEY (LenderID)
+    ->         REFERENCES Lender(LenderID)
+    -> );
+Query OK, 0 rows affected (0.642 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.006 sec)
+
+mysql> -- MERIDIAN MUSEUM DATABASE
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- SQL IMPLEMENTATION: TASKS 5 TO 9 AND TASK 12
+Query OK, 0 rows affected (0.002 sec)
+
+mysql> -- MySQL 8.0+
+Query OK, 0 rows affected (0.002 sec)
+
+mysql> -- Reproducible generated data seed: 4211
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.003 sec)
+
+mysql>
+mysql> DROP DATABASE IF EXISTS meridian_museum;
+Query OK, 18 rows affected (4.583 sec)
+
+mysql> CREATE DATABASE meridian_museum;
+Query OK, 1 row affected (0.075 sec)
+
+mysql> USE meridian_museum;
+Database changed
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- TASK 5: EER MODEL
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- PERSON, LENDER, EMPLOYEE, CURATOR, REGISTRAR
+Query OK, 0 rows affected (0.002 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.004 sec)
+
+mysql>
+mysql> CREATE TABLE Person (
+    ->     PersonID INT PRIMARY KEY,
+    ->     FirstName VARCHAR(50) NOT NULL,
+    ->     LastName VARCHAR(50) NOT NULL,
+    ->     Email VARCHAR(100) UNIQUE
+    -> );
+Query OK, 0 rows affected (0.248 sec)
+
+mysql>
+mysql> CREATE TABLE Person_Phone (
+    ->     PersonID INT NOT NULL,
+    ->     PhoneNumber VARCHAR(20) NOT NULL,
+    ->     PRIMARY KEY (PersonID, PhoneNumber),
+    ->     FOREIGN KEY (PersonID) REFERENCES Person(PersonID)
+    ->         ON DELETE CASCADE
+    -> );
+Query OK, 0 rows affected (0.252 sec)
+
+mysql>
+mysql> CREATE TABLE Organization (
+    ->     OrganizationID INT PRIMARY KEY,
+    ->     OrganizationName VARCHAR(100) NOT NULL UNIQUE
+    -> );
+Query OK, 0 rows affected (0.279 sec)
+
+mysql>
+mysql> CREATE TABLE Lender (
+    ->     LenderID INT PRIMARY KEY,
+    ->     PersonID INT NOT NULL UNIQUE,
+    ->     LenderType VARCHAR(30) DEFAULT 'INDIVIDUAL',
+    ->     FOREIGN KEY (PersonID) REFERENCES Person(PersonID)
+    -> );
+Query OK, 0 rows affected (0.279 sec)
+
+mysql>
+mysql> CREATE TABLE Employee (
+    ->     EmployeeID INT PRIMARY KEY,
+    ->     PersonID INT NOT NULL UNIQUE,
+    ->     EmployeeRole ENUM('CURATOR', 'REGISTRAR') NOT NULL,
+    ->     FOREIGN KEY (PersonID) REFERENCES Person(PersonID)
+    -> );
+Query OK, 0 rows affected (0.280 sec)
+
+mysql>
+mysql> CREATE TABLE Curator (
+    ->     EmployeeID INT PRIMARY KEY,
+    ->     Specialization VARCHAR(100),
+    ->     FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID)
+    ->         ON DELETE CASCADE
+    -> );
+Query OK, 0 rows affected (0.260 sec)
+
+mysql>
+mysql> CREATE TABLE Registrar (
+    ->     EmployeeID INT PRIMARY KEY,
+    ->     Department VARCHAR(100),
+    ->     FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID)
+    ->         ON DELETE CASCADE
+    -> );
+Query OK, 0 rows affected (0.306 sec)
+
+mysql>
+mysql> -- Notification contact can be a PERSON or ORGANIZATION.
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> CREATE TABLE Notification_Contact (
+    ->     ContactID INT PRIMARY KEY,
+    ->     PersonID INT NULL,
+    ->     OrganizationID INT NULL,
+    ->     ContactPurpose VARCHAR(100),
+    ->     CHECK (
+    ->         (PersonID IS NOT NULL AND OrganizationID IS NULL)
+    ->         OR
+    ->         (PersonID IS NULL AND OrganizationID IS NOT NULL)
+    ->     ),
+    ->     FOREIGN KEY (PersonID) REFERENCES Person(PersonID),
+    ->     FOREIGN KEY (OrganizationID)
+    ->         REFERENCES Organization(OrganizationID)
+    -> );
+Query OK, 0 rows affected (0.445 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- TASK 6: ENTITIES, WEAK ENTITIES AND COMPLEX ATTRIBUTES
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.003 sec)
+
+mysql>
+mysql> CREATE TABLE Artifact (
+    ->     ArtifactID INT PRIMARY KEY,
+    ->     ArtifactName VARCHAR(100) NOT NULL,
+    ->     CollectionType VARCHAR(50),
+    ->     Description TEXT,
+    ->     CurrentLenderID INT NOT NULL,
+    ->     EstimatedValue DECIMAL(12,2),
+    ->     FOREIGN KEY (CurrentLenderID) REFERENCES Lender(LenderID)
+    -> );
+Query OK, 0 rows affected (0.637 sec)
+
+mysql>
+mysql> CREATE TABLE Exhibition (
+    ->     ExhibitionID INT PRIMARY KEY,
+    ->     ExhibitionName VARCHAR(100) NOT NULL,
+    ->     StartDate DATE,
+    ->     EndDate DATE,
+    ->     CHECK (EndDate IS NULL OR StartDate IS NULL OR EndDate >= StartDate)
+    -> );
+Query OK, 0 rows affected (0.230 sec)
+
+mysql>
+mysql> -- DISPLAY_SLOT is a weak entity.
+Query OK, 0 rows affected (0.006 sec)
+
+mysql> -- SlotNo is unique only within its Exhibition.
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> CREATE TABLE Display_Slot (
+    ->     ExhibitionID INT NOT NULL,
+    ->     SlotNo INT NOT NULL,
+    ->     GalleryLocation VARCHAR(100),
+    ->     SlotDescription VARCHAR(200),
+    ->     PRIMARY KEY (ExhibitionID, SlotNo),
+    ->     FOREIGN KEY (ExhibitionID) REFERENCES Exhibition(ExhibitionID)
+    ->         ON DELETE CASCADE
+    -> );
+Query OK, 0 rows affected (0.258 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> -- TASK 7: RELATIONAL MAPPING
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- LOAN, LOAN_OBJECT AND PLACEMENT
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.005 sec)
+
+mysql>
+mysql> CREATE TABLE Loan (
+    ->     LoanID INT PRIMARY KEY,
+    ->     LenderID INT NOT NULL,
+    ->     CuratorID INT NOT NULL,
+    ->     LoanStartDate DATE NOT NULL,
+    ->     ExpectedReturnDate DATE NOT NULL,
+    ->     LoanStatus ENUM('OPEN', 'RETURNED', 'CANCELLED') DEFAULT 'OPEN',
+    ->     FOREIGN KEY (LenderID) REFERENCES Lender(LenderID),
+    ->     FOREIGN KEY (CuratorID) REFERENCES Curator(EmployeeID),
+    ->     CHECK (ExpectedReturnDate >= LoanStartDate)
+    -> );
+Query OK, 0 rows affected (0.380 sec)
+
+mysql>
+mysql> -- One loan can contain several artifacts.
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- An artifact can appear in successive loans.
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> CREATE TABLE Loan_Object (
+    ->     LoanID INT NOT NULL,
+    ->     ArtifactID INT NOT NULL,
+    ->     CustodyStartDate DATE NOT NULL,
+    ->     CustodyEndDate DATE NULL,
+    ->     LoanLineValue DECIMAL(12,2),
+    ->     PRIMARY KEY (LoanID, ArtifactID),
+    ->     FOREIGN KEY (LoanID) REFERENCES Loan(LoanID),
+    ->     FOREIGN KEY (ArtifactID) REFERENCES Artifact(ArtifactID),
+    ->     CHECK (
+    ->         CustodyEndDate IS NULL
+    ->         OR CustodyEndDate >= CustodyStartDate
+    ->     )
+    -> );
+Query OK, 0 rows affected (0.307 sec)
+
+mysql>
+mysql> CREATE TABLE Condition_Report (
+    ->     ReportID INT PRIMARY KEY,
+    ->     LoanID INT NOT NULL,
+    ->     ArtifactID INT NOT NULL,
+    ->     AuthorEmployeeID INT NOT NULL,
+    ->     ReportDate DATE NOT NULL,
+    ->     ConditionStatus VARCHAR(50),
+    ->     ReportNotes TEXT,
+    ->     FOREIGN KEY (LoanID, ArtifactID)
+    ->         REFERENCES Loan_Object(LoanID, ArtifactID),
+    ->     FOREIGN KEY (AuthorEmployeeID)
+    ->         REFERENCES Employee(EmployeeID)
+    -> );
+Query OK, 0 rows affected (0.369 sec)
+
+mysql>
+mysql> CREATE TABLE Placement (
+    ->     PlacementID INT PRIMARY KEY,
+    ->     ArtifactID INT NOT NULL,
+    ->     ExhibitionID INT NOT NULL,
+    ->     SlotNo INT NOT NULL,
+    ->     PlacementStartDate DATE,
+    ->     PlacementEndDate DATE,
+    ->     FOREIGN KEY (ArtifactID) REFERENCES Artifact(ArtifactID),
+    ->     FOREIGN KEY (ExhibitionID, SlotNo)
+    ->         REFERENCES Display_Slot(ExhibitionID, SlotNo),
+    ->     CHECK (
+    ->         PlacementEndDate IS NULL
+    ->         OR PlacementStartDate IS NULL
+    ->         OR PlacementEndDate >= PlacementStartDate
+    ->     )
+    -> );
+Query OK, 0 rows affected (0.388 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- TASK 12: SHARED OWNERSHIP AND OWNERSHIP HISTORY
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- OWNERSHIP IS SEPARATE FROM LOAN CUSTODY
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.003 sec)
+
+mysql>
+mysql> CREATE TABLE Legal_Owner (
+    ->     OwnerID INT PRIMARY KEY,
+    ->     PersonID INT NULL,
+    ->     OrganizationID INT NULL,
+    ->     CHECK (
+    ->         (PersonID IS NOT NULL AND OrganizationID IS NULL)
+    ->         OR
+    ->         (PersonID IS NULL AND OrganizationID IS NOT NULL)
+    ->     ),
+    ->     FOREIGN KEY (PersonID) REFERENCES Person(PersonID),
+    ->     FOREIGN KEY (OrganizationID)
+    ->         REFERENCES Organization(OrganizationID)
+    -> );
+Query OK, 0 rows affected (0.330 sec)
+
+mysql>
+mysql> CREATE TABLE Artifact_Owner (
+    ->     ArtifactID INT NOT NULL,
+    ->     OwnerID INT NOT NULL,
+    ->     ValidFrom DATE NOT NULL,
+    ->     ValidTo DATE NULL,
+    ->     OwnershipShare DECIMAL(5,2) NOT NULL,
+    ->     PRIMARY KEY (ArtifactID, OwnerID, ValidFrom),
+    ->     FOREIGN KEY (ArtifactID) REFERENCES Artifact(ArtifactID),
+    ->     FOREIGN KEY (OwnerID) REFERENCES Legal_Owner(OwnerID),
+    ->     CHECK (OwnershipShare > 0 AND OwnershipShare <= 100),
+    ->     CHECK (ValidTo IS NULL OR ValidTo >= ValidFrom)
+    -> );
+Query OK, 0 rows affected (0.331 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.006 sec)
+
+mysql> -- SAMPLE DATA
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.004 sec)
+
+mysql>
+mysql> INSERT INTO Person VALUES
+    -> (1, 'Arun', 'Kumar', 'arun@example.com'),
+    -> (2, 'Priya', 'Sharma', 'priya@example.com'),
+    -> (3, 'Rahul', 'Das', 'rahul@example.com'),
+    -> (4, 'Meena', 'Ravi', 'meena@example.com'),
+    -> (5, 'Karthik', 'Raj', 'karthik@example.com'),
+    -> (6, 'Divya', 'Mohan', 'divya@example.com');
+Query OK, 6 rows affected (0.070 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Person_Phone VALUES
+    -> (1, '9876543210'),
+    -> (1, '9876501234'),
+    -> (2, '9876511111'),
+    -> (3, '9876522222');
+Query OK, 4 rows affected (0.061 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Organization VALUES
+    -> (1, 'Heritage Arts Foundation');
+Query OK, 1 row affected (0.041 sec)
+
+mysql>
+mysql> INSERT INTO Lender VALUES
+    -> (1, 1, 'INDIVIDUAL'),
+    -> (2, 2, 'INDIVIDUAL'),
+    -> (3, 3, 'INDIVIDUAL');
+Query OK, 3 rows affected (0.054 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Employee VALUES
+    -> (101, 4, 'CURATOR'),
+    -> (102, 5, 'REGISTRAR');
+Query OK, 2 rows affected (0.053 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Curator VALUES
+    -> (101, 'Ancient Artifacts');
+Query OK, 1 row affected (0.043 sec)
+
+mysql>
+mysql> INSERT INTO Registrar VALUES
+    -> (102, 'Collections Department');
+Query OK, 1 row affected (0.053 sec)
+
+mysql>
+mysql> INSERT INTO Notification_Contact VALUES
+    -> (1, 1, NULL, 'Loan notifications'),
+    -> (2, NULL, 1, 'Organization notifications');
+Query OK, 2 rows affected (0.054 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Artifact VALUES
+    -> (1, 'Bronze Statue', 'Sculpture', 'Ancient bronze statue', 1, 50000.00),
+    -> (2, 'Clay Pot', 'Pottery', 'Traditional clay pot', 1, 12000.00),
+    -> (3, 'Silver Coin', 'Coin', 'Historic silver coin', 2, 25000.00),
+    -> (4, 'Old Painting', 'Painting', 'Traditional painting', 3, 75000.00);
+Query OK, 4 rows affected (0.059 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Exhibition VALUES
+    -> (1, 'Ancient Indian Art', '2026-01-01', '2026-12-31');
+Query OK, 1 row affected (0.059 sec)
+
+mysql>
+mysql> INSERT INTO Display_Slot VALUES
+    -> (1, 1, 'Main Hall', 'Central display'),
+    -> (1, 2, 'Main Hall', 'Side display'),
+    -> (1, 3, 'East Wing', 'Coin display');
+Query OK, 3 rows affected (0.056 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Loan VALUES
+    -> (1, 1, 101, '2025-01-01', '2025-03-01', 'RETURNED'),
+    -> (2, 2, 101, '2026-10-01', '2026-11-01', 'OPEN'),
+    -> (3, 1, 101, '2026-02-01', '2026-03-01', 'RETURNED');
+Query OK, 3 rows affected (0.059 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Loan_Object VALUES
+    -> (1, 1, '2025-01-01', '2025-03-01', 48000.00),
+    -> (1, 2, '2025-01-01', '2025-03-01', 11000.00),
+    -> (2, 3, '2026-10-01', NULL, 24000.00),
+    -> (3, 1, '2026-02-01', '2026-03-01', 49000.00);
+Query OK, 4 rows affected (0.053 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Condition_Report VALUES
+    -> (1, 1, 1, 102, '2025-01-02', 'Good', 'No visible damage'),
+    -> (2, 1, 2, 102, '2025-01-02', 'Good', 'Minor surface marks'),
+    -> (3, 2, 3, 102, '2026-10-02', 'Excellent', 'Good condition'),
+    -> (4, 3, 1, 102, '2026-02-02', 'Good', 'Condition verified');
+Query OK, 4 rows affected (0.056 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Placement VALUES
+    -> (1, 1, 1, 1, '2026-02-01', '2026-03-01'),
+    -> (2, 2, 1, 2, '2026-02-01', '2026-03-01'),
+    -> (3, 3, 1, 3, '2026-10-01', '2026-11-01');
+Query OK, 3 rows affected (0.055 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- TASK 8: REPRODUCIBLE DATA GENERATION
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> -- SEED = 4211
+Query OK, 0 rows affected (0.006 sec)
+
+mysql> -- Generate 100, 1000, 10000 or 100000 lender records.
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- Run one CALL at a time to test each population size.
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.003 sec)
+
+mysql>
+mysql> CREATE TABLE Generated_Number (
+    ->     N INT PRIMARY KEY
+    -> );
+Query OK, 0 rows affected (0.219 sec)
+
+mysql>
+mysql> SET SESSION cte_max_recursion_depth = 100001;
+Query OK, 0 rows affected (0.054 sec)
+
+mysql>
+mysql> INSERT INTO Generated_Number (N)
+    -> WITH RECURSIVE Numbers AS (
+    ->     SELECT 1 AS N
+    ->     UNION ALL
+    ->     SELECT N + 1 FROM Numbers WHERE N < 100000
+    -> )
+    -> SELECT N FROM Numbers;
+Query OK, 100000 rows affected (15.207 sec)
+Records: 100000  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> DELIMITER //
+mysql>
+mysql> CREATE PROCEDURE GenerateLenders(IN p_count INT)
+    -> BEGIN
+    ->     IF p_count < 1 OR p_count > 100000 THEN
+    ->         SIGNAL SQLSTATE '45000'
+    ->         SET MESSAGE_TEXT = 'Count must be between 1 and 100000';
+    ->     END IF;
+    ->
+    ->     -- Remove only previously generated records.
+    ->     DELETE FROM Lender WHERE LenderID >= 10001;
+    ->     DELETE FROM Person WHERE PersonID >= 10001;
+    ->
+    ->     INSERT INTO Person (PersonID, FirstName, LastName, Email)
+    ->     SELECT
+    ->         10000 + N,
+    ->         CONCAT('Generated', N),
+    ->         'Lender',
+    ->         CONCAT('generated', N, '@museum.test')
+    ->     FROM Generated_Number
+    ->     WHERE N <= p_count;
+    ->
+    ->     INSERT INTO Lender (LenderID, PersonID, LenderType)
+    ->     SELECT
+    ->         10000 + N,
+    ->         10000 + N,
+    ->         'GENERATED'
+    ->     FROM Generated_Number
+    ->     WHERE N <= p_count;
+    ->
+    ->     SELECT
+    ->         4211 AS RandomSeed,
+    ->         p_count AS GeneratedLenders,
+    ->         COUNT(*) AS TotalLenders
+    ->     FROM Lender;
+    -> END//
+Query OK, 0 rows affected (0.094 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql>
+mysql> -- Execute ONE of these at a time:
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> -- CALL GenerateLenders(100);
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> -- CALL GenerateLenders(1000);
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- CALL GenerateLenders(10000);
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- CALL GenerateLenders(100000);
+Query OK, 0 rows affected (0.003 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- TASK 9: EIGHT VALIDATION QUERIES
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.005 sec)
+
+mysql>
+mysql> -- QUERY 1: Find overdue loans that are still open.
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> SELECT
+    ->     LoanID,
+    ->     LenderID,
+    ->     ExpectedReturnDate,
+    ->     LoanStatus
+    -> FROM Loan
+    -> WHERE LoanStatus = 'OPEN'
+    -> AND ExpectedReturnDate < CURDATE();
++--------+----------+--------------------+------------+
+| LoanID | LenderID | ExpectedReturnDate | LoanStatus |
++--------+----------+--------------------+------------+
+|      2 |        2 | 2026-11-01         | OPEN       |
++--------+----------+--------------------+------------+
+1 row in set (0.044 sec)
+
+mysql>
+mysql> -- QUERY 2: Find artifacts without condition reports.
+Query OK, 0 rows affected (0.006 sec)
+
+mysql> SELECT
+    ->     A.ArtifactID,
+    ->     A.ArtifactName
+    -> FROM Artifact A
+    -> WHERE NOT EXISTS (
+    ->     SELECT 1
+    ->     FROM Loan_Object LO
+    ->     JOIN Condition_Report CR
+    ->       ON CR.LoanID = LO.LoanID
+    ->      AND CR.ArtifactID = LO.ArtifactID
+    ->     WHERE LO.ArtifactID = A.ArtifactID
+    -> );
++------------+--------------+
+| ArtifactID | ArtifactName |
++------------+--------------+
+|          4 | Old Painting |
++------------+--------------+
+1 row in set (0.052 sec)
+
+mysql>
+mysql> -- QUERY 3: Display artifacts currently in open loans.
+Query OK, 0 rows affected (0.007 sec)
+
+mysql> SELECT
+    ->     L.LoanID,
+    ->     A.ArtifactID,
+    ->     A.ArtifactName,
+    ->     LO.CustodyStartDate
+    -> FROM Loan L
+    -> JOIN Loan_Object LO ON L.LoanID = LO.LoanID
+    -> JOIN Artifact A ON LO.ArtifactID = A.ArtifactID
+    -> WHERE L.LoanStatus = 'OPEN';
++--------+------------+--------------+------------------+
+| LoanID | ArtifactID | ArtifactName | CustodyStartDate |
++--------+------------+--------------+------------------+
+|      2 |          3 | Silver Coin  | 2026-10-01       |
++--------+------------+--------------+------------------+
+1 row in set (0.010 sec)
+
+mysql>
+mysql> -- QUERY 4: Count artifacts in each loan.
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> SELECT
+    ->     L.LoanID,
+    ->     COUNT(LO.ArtifactID) AS TotalArtifacts
+    -> FROM Loan L
+    -> LEFT JOIN Loan_Object LO ON L.LoanID = LO.LoanID
+    -> GROUP BY L.LoanID;
++--------+----------------+
+| LoanID | TotalArtifacts |
++--------+----------------+
+|      1 |              2 |
+|      2 |              1 |
+|      3 |              1 |
++--------+----------------+
+3 rows in set (0.050 sec)
+
+mysql>
+mysql> -- QUERY 5: Display condition reports for each artifact.
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> SELECT
+    ->     A.ArtifactID,
+    ->     A.ArtifactName,
+    ->     CR.ReportID,
+    ->     CR.ReportDate,
+    ->     CR.ConditionStatus
+    -> FROM Artifact A
+    -> JOIN Loan_Object LO ON A.ArtifactID = LO.ArtifactID
+    -> JOIN Condition_Report CR
+    ->   ON CR.LoanID = LO.LoanID
+    ->  AND CR.ArtifactID = LO.ArtifactID
+    -> ORDER BY A.ArtifactID, CR.ReportDate;
++------------+---------------+----------+------------+-----------------+
+| ArtifactID | ArtifactName  | ReportID | ReportDate | ConditionStatus |
++------------+---------------+----------+------------+-----------------+
+|          1 | Bronze Statue |        1 | 2025-01-02 | Good            |
+|          1 | Bronze Statue |        4 | 2026-02-02 | Good            |
+|          2 | Clay Pot      |        2 | 2025-01-02 | Good            |
+|          3 | Silver Coin   |        3 | 2026-10-02 | Excellent       |
++------------+---------------+----------+------------+-----------------+
+4 rows in set (0.013 sec)
+
+mysql>
+mysql> -- QUERY 6: Count loans handled by each lender.
+Query OK, 0 rows affected (0.007 sec)
+
+mysql> SELECT
+    ->     L.LenderID,
+    ->     P.FirstName,
+    ->     P.LastName,
+    ->     COUNT(LOAN.LoanID) AS TotalLoans
+    -> FROM Lender L
+    -> JOIN Person P ON L.PersonID = P.PersonID
+    -> LEFT JOIN Loan LOAN ON L.LenderID = LOAN.LenderID
+    -> GROUP BY L.LenderID, P.FirstName, P.LastName;
++----------+-----------+----------+------------+
+| LenderID | FirstName | LastName | TotalLoans |
++----------+-----------+----------+------------+
+|        1 | Arun      | Kumar    |          2 |
+|        2 | Priya     | Sharma   |          1 |
+|        3 | Rahul     | Das      |          0 |
++----------+-----------+----------+------------+
+3 rows in set (0.096 sec)
+
+mysql>
+mysql> -- QUERY 7: Display exhibition placements and their slots.
+Query OK, 0 rows affected (0.007 sec)
+
+mysql> SELECT
+    ->     E.ExhibitionName,
+    ->     DS.SlotNo,
+    ->     DS.GalleryLocation,
+    ->     A.ArtifactName
+    -> FROM Placement P
+    -> JOIN Exhibition E ON P.ExhibitionID = E.ExhibitionID
+    -> JOIN Display_Slot DS
+    ->   ON P.ExhibitionID = DS.ExhibitionID
+    ->  AND P.SlotNo = DS.SlotNo
+    -> JOIN Artifact A ON P.ArtifactID = A.ArtifactID;
++--------------------+--------+-----------------+---------------+
+| ExhibitionName     | SlotNo | GalleryLocation | ArtifactName  |
++--------------------+--------+-----------------+---------------+
+| Ancient Indian Art |      1 | Main Hall       | Bronze Statue |
+| Ancient Indian Art |      2 | Main Hall       | Clay Pot      |
+| Ancient Indian Art |      3 | East Wing       | Silver Coin   |
++--------------------+--------+-----------------+---------------+
+3 rows in set (0.013 sec)
+
+mysql>
+mysql> -- QUERY 8: Display custody history of each artifact.
+Query OK, 0 rows affected (0.008 sec)
+
+mysql> SELECT
+    ->     A.ArtifactID,
+    ->     A.ArtifactName,
+    ->     LO.LoanID,
+    ->     LO.CustodyStartDate,
+    ->     LO.CustodyEndDate
+    -> FROM Artifact A
+    -> JOIN Loan_Object LO ON A.ArtifactID = LO.ArtifactID
+    -> ORDER BY A.ArtifactID, LO.CustodyStartDate;
++------------+---------------+--------+------------------+----------------+
+| ArtifactID | ArtifactName  | LoanID | CustodyStartDate | CustodyEndDate |
++------------+---------------+--------+------------------+----------------+
+|          1 | Bronze Statue |      1 | 2025-01-01       | 2025-03-01     |
+|          1 | Bronze Statue |      3 | 2026-02-01       | 2026-03-01     |
+|          2 | Clay Pot      |      1 | 2025-01-01       | 2025-03-01     |
+|          3 | Silver Coin   |      2 | 2026-10-01       | NULL           |
++------------+---------------+--------+------------------+----------------+
+4 rows in set (0.010 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.006 sec)
+
+mysql> -- TASK 9: FLAT FILE ANOMALY DEMONSTRATION
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.003 sec)
+
+mysql>
+mysql> CREATE TABLE Flat_Loan_File (
+    ->     LoanID INT,
+    ->     LenderName VARCHAR(100),
+    ->     LenderPhone VARCHAR(20),
+    ->     ArtifactID INT,
+    ->     ArtifactName VARCHAR(100),
+    ->     ExpectedReturnDate DATE
+    -> );
+Query OK, 0 rows affected (0.197 sec)
+
+mysql>
+mysql> INSERT INTO Flat_Loan_File VALUES
+    -> (10, 'Arun Kumar', '9876543210', 1, 'Bronze Statue', '2026-12-01'),
+    -> (10, 'Arun Kumar', '9876543210', 2, 'Clay Pot', '2026-12-01');
+Query OK, 2 rows affected (0.055 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- View repeated lender information.
+Query OK, 0 rows affected (0.006 sec)
+
+mysql> SELECT * FROM Flat_Loan_File;
++--------+------------+-------------+------------+---------------+--------------------+
+| LoanID | LenderName | LenderPhone | ArtifactID | ArtifactName  | ExpectedReturnDate |
++--------+------------+-------------+------------+---------------+--------------------+
+|     10 | Arun Kumar | 9876543210  |          1 | Bronze Statue | 2026-12-01         |
+|     10 | Arun Kumar | 9876543210  |          2 | Clay Pot      | 2026-12-01         |
++--------+------------+-------------+------------+---------------+--------------------+
+2 rows in set (0.009 sec)
+
+mysql>
+mysql> -- Example update anomaly: changing a lender phone requires
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> -- updating multiple rows in the flat file.
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> UPDATE Flat_Loan_File
+    -> SET LenderPhone = '9999999999'
+    -> WHERE LenderName = 'Arun Kumar';
+Query OK, 2 rows affected (0.036 sec)
+Rows matched: 2  Changed: 2  Warnings: 0
+
+mysql>
+mysql> -- Example insertion anomaly: a lender cannot be recorded
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- independently without inserting a loan/artifact row.
+Query OK, 0 rows affected (0.002 sec)
+
+mysql> -- Example deletion anomaly: deleting the last artifact row
+Query OK, 0 rows affected (0.002 sec)
+
+mysql> -- for a loan may also remove the only stored lender details.
+Query OK, 0 rows affected (0.002 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- TASK 12: OWNERSHIP HISTORY DATA
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- Ownership is not the same as loan custody.
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.006 sec)
+
+mysql>
+mysql> INSERT INTO Legal_Owner VALUES
+    -> (1, 1, NULL),
+    -> (2, 2, NULL),
+    -> (3, NULL, 1),
+    -> (4, 6, NULL);
+Query OK, 4 rows affected (0.049 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Artifact 1 has two owners with a combined 100% share.
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> INSERT INTO Artifact_Owner VALUES
+    -> (1, 1, '2025-01-01', '2026-05-31', 60.00),
+    -> (1, 2, '2025-01-01', '2026-05-31', 40.00),
+    -> (1, 3, '2026-06-01', NULL, 50.00),
+    -> (1, 4, '2026-06-01', NULL, 50.00);
+Query OK, 4 rows affected (0.047 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Artifact 2 has one legal owner.
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> INSERT INTO Artifact_Owner VALUES
+    -> (2, 1, '2025-01-01', NULL, 100.00);
+Query OK, 1 row affected (0.034 sec)
+
+mysql>
+mysql> -- Artifact 3 is owned by an organization.
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> INSERT INTO Artifact_Owner VALUES
+    -> (3, 3, '2025-01-01', NULL, 100.00);
+Query OK, 1 row affected (0.034 sec)
+
+mysql>
+mysql> -- Show ownership history.
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> SELECT
+    ->     AO.ArtifactID,
+    ->     AO.OwnerID,
+    ->     AO.OwnershipShare,
+    ->     AO.ValidFrom,
+    ->     AO.ValidTo
+    -> FROM Artifact_Owner AO
+    -> ORDER BY AO.ArtifactID, AO.ValidFrom;
++------------+---------+----------------+------------+------------+
+| ArtifactID | OwnerID | OwnershipShare | ValidFrom  | ValidTo    |
++------------+---------+----------------+------------+------------+
+|          1 |       1 |          60.00 | 2025-01-01 | 2026-05-31 |
+|          1 |       2 |          40.00 | 2025-01-01 | 2026-05-31 |
+|          1 |       3 |          50.00 | 2026-06-01 | NULL       |
+|          1 |       4 |          50.00 | 2026-06-01 | NULL       |
+|          2 |       1 |         100.00 | 2025-01-01 | NULL       |
+|          3 |       3 |         100.00 | 2025-01-01 | NULL       |
++------------+---------+----------------+------------+------------+
+6 rows in set (0.009 sec)
+
+mysql>
+mysql> -- Check total ownership share for each current artifact.
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> SELECT
+    ->     ArtifactID,
+    ->     SUM(OwnershipShare) AS TotalOwnershipShare
+    -> FROM Artifact_Owner
+    -> WHERE ValidTo IS NULL
+    -> GROUP BY ArtifactID;
++------------+---------------------+
+| ArtifactID | TotalOwnershipShare |
++------------+---------------------+
+|          1 |              100.00 |
+|          2 |              100.00 |
+|          3 |              100.00 |
++------------+---------------------+
+3 rows in set (0.013 sec)
+
+mysql>
+mysql> -- Find current ownership records that do not total 100%.
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> SELECT
+    ->     ArtifactID,
+    ->     SUM(OwnershipShare) AS TotalOwnershipShare
+    -> FROM Artifact_Owner
+    -> WHERE ValidTo IS NULL
+    -> GROUP BY ArtifactID
+    -> HAVING SUM(OwnershipShare) <> 100.00;
+Empty set (0.009 sec)
+
+mysql>
+mysql> -- Compare legal ownership with current loan custody.
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> SELECT
+    ->     A.ArtifactID,
+    ->     A.ArtifactName,
+    ->     L.LoanID,
+    ->     L.LoanStatus,
+    ->     AO.OwnerID,
+    ->     AO.OwnershipShare
+    -> FROM Artifact A
+    -> LEFT JOIN Loan_Object LO ON A.ArtifactID = LO.ArtifactID
+    -> LEFT JOIN Loan L ON LO.LoanID = L.LoanID
+    -> LEFT JOIN Artifact_Owner AO
+    ->   ON A.ArtifactID = AO.ArtifactID
+    ->  AND AO.ValidTo IS NULL
+    -> ORDER BY A.ArtifactID;
++------------+---------------+--------+------------+---------+----------------+
+| ArtifactID | ArtifactName  | LoanID | LoanStatus | OwnerID | OwnershipShare |
++------------+---------------+--------+------------+---------+----------------+
+|          1 | Bronze Statue |      1 | RETURNED   |       3 |          50.00 |
+|          1 | Bronze Statue |      1 | RETURNED   |       4 |          50.00 |
+|          1 | Bronze Statue |      3 | RETURNED   |       3 |          50.00 |
+|          1 | Bronze Statue |      3 | RETURNED   |       4 |          50.00 |
+|          2 | Clay Pot      |      1 | RETURNED   |       1 |         100.00 |
+|          3 | Silver Coin   |      2 | OPEN       |       3 |         100.00 |
+|          4 | Old Painting  |   NULL | NULL       |    NULL |           NULL |
++------------+---------------+--------+------------+---------+----------------+
+7 rows in set (0.017 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.006 sec)
+
+mysql> -- OPERATIONAL VIEWS
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.004 sec)
+
+mysql>
+mysql> CREATE VIEW Loan_Details AS
+    -> SELECT
+    ->     L.LoanID,
+    ->     L.LenderID,
+    ->     L.CuratorID,
+    ->     L.LoanStartDate,
+    ->     L.ExpectedReturnDate,
+    ->     L.LoanStatus,
+    ->     LO.ArtifactID,
+    ->     LO.CustodyStartDate,
+    ->     LO.CustodyEndDate
+    -> FROM Loan L
+    -> JOIN Loan_Object LO ON L.LoanID = LO.LoanID;
+Query OK, 0 rows affected (0.078 sec)
+
+mysql>
+mysql> CREATE VIEW Exhibition_Details AS
+    -> SELECT
+    ->     E.ExhibitionName,
+    ->     DS.SlotNo,
+    ->     DS.GalleryLocation,
+    ->     A.ArtifactName
+    -> FROM Placement P
+    -> JOIN Exhibition E ON P.ExhibitionID = E.ExhibitionID
+    -> JOIN Display_Slot DS
+    ->   ON P.ExhibitionID = DS.ExhibitionID
+    ->  AND P.SlotNo = DS.SlotNo
+    -> JOIN Artifact A ON P.ArtifactID = A.ArtifactID;
+Query OK, 0 rows affected (0.049 sec)
+
+mysql>
+mysql> -- Display views.
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> SELECT * FROM Loan_Details;
++--------+----------+-----------+---------------+--------------------+------------+------------+------------------+----------------+
+| LoanID | LenderID | CuratorID | LoanStartDate | ExpectedReturnDate | LoanStatus | ArtifactID | CustodyStartDate | CustodyEndDate |
++--------+----------+-----------+---------------+--------------------+------------+------------+------------------+----------------+
+|      1 |        1 |       101 | 2025-01-01    | 2025-03-01         | RETURNED   |          1 | 2025-01-01       | 2025-03-01     |
+|      1 |        1 |       101 | 2025-01-01    | 2025-03-01         | RETURNED   |          2 | 2025-01-01       | 2025-03-01     |
+|      2 |        2 |       101 | 2026-10-01    | 2026-11-01         | OPEN       |          3 | 2026-10-01       | NULL           |
+|      3 |        1 |       101 | 2026-02-01    | 2026-03-01         | RETURNED   |          1 | 2026-02-01       | 2026-03-01     |
++--------+----------+-----------+---------------+--------------------+------------+------------+------------------+----------------+
+4 rows in set (0.026 sec)
+
+mysql> SELECT * FROM Exhibition_Details;
++--------------------+--------+-----------------+---------------+
+| ExhibitionName     | SlotNo | GalleryLocation | ArtifactName  |
++--------------------+--------+-----------------+---------------+
+| Ancient Indian Art |      1 | Main Hall       | Bronze Statue |
+| Ancient Indian Art |      2 | Main Hall       | Clay Pot      |
+| Ancient Indian Art |      3 | East Wing       | Silver Coin   |
++--------------------+--------+-----------------+---------------+
+3 rows in set (0.015 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.006 sec)
+
+mysql> -- INDEXES AND QUERY PLAN
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.002 sec)
+
+mysql>
+mysql> CREATE INDEX idx_loan_lender
+    -> ON Loan(LenderID);
+Query OK, 0 rows affected (0.496 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> CREATE INDEX idx_loan_status_due
+    -> ON Loan(LoanStatus, ExpectedReturnDate);
+Query OK, 0 rows affected (0.613 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> CREATE INDEX idx_condition_artifact
+    -> ON Condition_Report(ArtifactID);
+Query OK, 0 rows affected (0.421 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> CREATE INDEX idx_loan_object_artifact
+    -> ON Loan_Object(ArtifactID);
+Query OK, 0 rows affected (0.416 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> CREATE INDEX idx_owner_artifact_dates
+    -> ON Artifact_Owner(ArtifactID, ValidFrom, ValidTo);
+Query OK, 0 rows affected (0.442 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Check query execution plan.
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> EXPLAIN
+    -> SELECT *
+    -> FROM Loan
+    -> WHERE LoanStatus = 'OPEN'
+    -> AND ExpectedReturnDate < CURDATE();
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| EXPLAIN                                                                                                                                                                                                                                            |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| -> Index range scan on Loan using idx_loan_status_due over (LoanStatus = 'OPEN' AND ExpectedReturnDate < '2026-11-06'), with index condition: ((loan.LoanStatus = 'OPEN') and (loan.ExpectedReturnDate < <cache>(curdate())))  (cost=0.71 rows=1)
+ |
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.086 sec)
+
+mysql>
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.007 sec)
+
+mysql> -- END OF SCRIPT
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- =========================================================
+Query OK, 0 rows affected (0.003 sec)
+
+mysql>
+
