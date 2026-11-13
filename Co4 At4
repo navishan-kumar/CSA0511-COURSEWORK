@@ -1,0 +1,283 @@
+mysql> -- ============================================================================
+Query OK, 0 rows affected (0.004 sec)
+
+mysql> -- BANK TRANSACTION LOG - COMPLETE END-TO-END SQL SCRIPT (MySQL 8.0+)
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- Covers: Database Creation, All 3 Storage Strategies (Task 1), Index Design (Task 5),
+Query OK, 0 rows affected (0.002 sec)
+
+mysql> -- Dataset Scaling 1K -> 10K -> 100K -> 1M (Task 8), Metrics Collection (Task 9),
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> -- Daily Maintenance Simulation (Task 11), and UPI Gateway Redesign (Task 12)
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> -- ============================================================================
+Query OK, 0 rows affected (0.002 sec)
+
+mysql>
+mysql> -- ============================================================================
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> -- STEP 1: DATABASE & SYSTEM CONFIGURATION
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> -- ============================================================================
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> DROP DATABASE IF EXISTS bank_txn_db;
+Query OK, 3 rows affected (0.331 sec)
+
+mysql> CREATE DATABASE bank_txn_db;
+Query OK, 1 row affected (0.073 sec)
+
+mysql> USE bank_txn_db;
+Database changed
+mysql>
+mysql> SET SESSION cte_max_recursion_depth = 1000010;
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> SET max_heap_table_size = 536870912; -- 512 MB for MEMORY Hash table
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> SET tmp_table_size = 536870912;
+Query OK, 0 rows affected (0.001 sec)
+
+mysql>
+mysql> -- ============================================================================
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> -- STEP 2: CREATE TABLES FOR ALL STORAGE & INDEXING STRATEGIES (TASKS 1, 5, 12)
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> -- Record Layout = 200 Bytes Fixed:
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> -- TxnID(8) + AccountNo(12) + TxnTime(8) + Type(1) + Amount(8) + Branch(20)
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> -- + Channel(10) + Narration(80) + Balance(8) + OtherData(45) = 200 Bytes
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> -- ============================================================================
+Query OK, 0 rows affected (0.002 sec)
+
+mysql>
+mysql> -- Strategy 1: Unordered Heap Storage (MyISAM without Secondary Indexes)
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> CREATE TABLE txn_heap (
+    ->     TxnID BIGINT NOT NULL,
+    ->     AccountNo CHAR(12) NOT NULL,
+    ->     TxnTime BIGINT NOT NULL,
+    ->     Type CHAR(1) NOT NULL,
+    ->     Amount DECIMAL(15, 2) NOT NULL,
+    ->     Branch CHAR(20) NOT NULL,
+    ->     Channel CHAR(10) NOT NULL,
+    ->     Narration CHAR(80) NOT NULL,
+    ->     Balance DECIMAL(15, 2) NOT NULL,
+    ->     OtherData CHAR(45) NOT NULL
+    -> ) ENGINE=MyISAM;
+Query OK, 0 rows affected (0.096 sec)
+
+mysql>
+mysql> -- Strategy 2: Hash-Based Storage (MEMORY Engine with Explicit HASH Primary Index)
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> CREATE TABLE txn_hash (
+    ->     TxnID BIGINT NOT NULL,
+    ->     AccountNo CHAR(12) NOT NULL,
+    ->     TxnTime BIGINT NOT NULL,
+    ->     Type CHAR(1) NOT NULL,
+    ->     Amount DECIMAL(15, 2) NOT NULL,
+    ->     Branch CHAR(20) NOT NULL,
+    ->     Channel CHAR(10) NOT NULL,
+    ->     Narration CHAR(80) NOT NULL,
+    ->     Balance DECIMAL(15, 2) NOT NULL,
+    ->     OtherData CHAR(45) NOT NULL,
+    ->     PRIMARY KEY USING HASH (TxnID)
+    -> ) ENGINE=MEMORY;
+Query OK, 0 rows affected (0.067 sec)
+
+mysql>
+mysql> -- Strategy 3 & Task 5: Clustered B+ Tree on TxnID + Secondary B+ Tree Indexes
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> CREATE TABLE txn_btree (
+    ->     TxnID BIGINT NOT NULL,
+    ->     AccountNo CHAR(12) NOT NULL,
+    ->     TxnTime BIGINT NOT NULL,
+    ->     Type CHAR(1) NOT NULL,
+    ->     Amount DECIMAL(15, 2) NOT NULL,
+    ->     Branch CHAR(20) NOT NULL,
+    ->     Channel CHAR(10) NOT NULL,
+    ->     Narration CHAR(80) NOT NULL,
+    ->     Balance DECIMAL(15, 2) NOT NULL,
+    ->     OtherData CHAR(45) NOT NULL,
+    ->     PRIMARY KEY (TxnID),                   -- Clustered B+ Tree Index (Dispute & Range)
+    ->     INDEX idx_account_no (AccountNo),      -- Secondary Index (Customer Statements)
+    ->     INDEX idx_branch (Branch)              -- Secondary Index (Branch Audit)
+    -> ) ENGINE=InnoDB;
+Query OK, 0 rows affected (0.411 sec)
+
+mysql>
+mysql> -- Task 12 Redesign: Chronological Append-Only Clustered B+ Tree + Unique Index on GatewayTxnID
+Query OK, 0 rows affected (0.003 sec)
+
+mysql> CREATE TABLE txn_upi_redesigned (
+    ->     SeqID BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    ->     TxnTime BIGINT NOT NULL,
+    ->     GatewayTxnID BIGINT UNSIGNED NOT NULL,
+    ->     AccountNo CHAR(12) NOT NULL,
+    ->     Type CHAR(1) NOT NULL,
+    ->     Amount DECIMAL(15, 2) NOT NULL,
+    ->     Branch CHAR(20) NOT NULL,
+    ->     Channel CHAR(10) NOT NULL,
+    ->     Narration CHAR(80) NOT NULL,
+    ->     Balance DECIMAL(15, 2) NOT NULL,
+    ->     OtherData CHAR(45) NOT NULL,
+    ->     PRIMARY KEY (TxnTime, SeqID),              -- Append-Only Time Clustering
+    ->     UNIQUE INDEX idx_gateway_txnid (GatewayTxnID), -- Fast Dispute Lookup
+    ->     INDEX idx_upi_account (AccountNo),
+    ->     INDEX idx_upi_branch (Branch)
+    -> ) ENGINE=InnoDB;
+ERROR 1075 (42000): Incorrect table definition; there can be only one auto column and it must be defined as a key
+mysql>
+mysql> -- Experiment Log Table to Capture Results Automatically Across Scales (Task 9)
+Query OK, 0 rows affected (0.005 sec)
+
+mysql> CREATE TABLE experiment_results (
+    ->     RunID INT AUTO_INCREMENT PRIMARY KEY,
+    ->     DatasetSize INT,
+    ->     StrategyName VARCHAR(30),
+    ->     StorageEngine VARCHAR(20),
+    ->     RecordCount BIGINT,
+    ->     DataSize_MB DECIMAL(10, 2),
+    ->     IndexSize_MB DECIMAL(10, 2),
+    ->     TotalSize_MB DECIMAL(10, 2),
+    ->     Est_4KB_Data_Blocks BIGINT,
+    ->     Est_4KB_Index_Blocks BIGINT,
+    ->     RecordedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.229 sec)
+
+mysql>
+mysql> -- ============================================================================
+Query OK, 0 rows affected (0.002 sec)
+
+mysql> -- STEP 3: STORED PROCEDURE FOR DATA GENERATION & BENCHMARKING (TASKS 8 & 9)
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> -- ============================================================================
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> DELIMITER //
+mysql>
+mysql> CREATE PROCEDURE run_full_benchmark(IN target_rows INT)
+    -> BEGIN
+    ->     -- Reset tables for clean test run
+    ->     TRUNCATE TABLE txn_heap;
+    ->     TRUNCATE TABLE txn_hash;
+    ->     TRUNCATE TABLE txn_btree;
+    ->
+    ->     -- 1. Populate Clustered B+ Tree with exact 200-byte records
+    ->     INSERT INTO txn_btree (
+    ->         TxnID, AccountNo, TxnTime, Type, Amount, Branch, Channel, Narration, Balance, OtherData
+    ->     )
+    ->     WITH RECURSIVE seq AS (
+    ->         SELECT 1 AS n
+    ->         UNION ALL
+    ->         SELECT n + 1 FROM seq WHERE n < target_rows
+    ->     )
+    ->     SELECT
+    ->         n AS TxnID,
+    ->         CONCAT('ACC', LPAD(MOD(n, 100000), 9, '0')) AS AccountNo,
+    ->         1730000000 + n AS TxnTime,
+    ->         IF(MOD(n, 2) = 0, 'C', 'D') AS Type,
+    ->         ROUND(100 + (MOD(n * 37, 50000) / 100), 2) AS Amount,
+    ->         CONCAT('BRANCH_', LPAD(MOD(n, 500), 4, '0')) AS Branch,
+    ->         ELT(MOD(n, 4) + 1, 'UPI', 'NEFT', 'IMPS', 'ATM') AS Channel,
+    ->         RPAD(CONCAT('TXN_REF_', n), 80, ' ') AS Narration,
+    ->         ROUND(50000 + (MOD(n * 19, 100000) / 10), 2) AS Balance,
+    ->         RPAD('META_DATA_PADDING', 45, 'X') AS OtherData
+    ->     FROM seq;
+    ->
+    ->     -- 2. Replicate identical dataset into Heap and Hash tables
+    ->     INSERT INTO txn_heap SELECT * FROM txn_btree;
+    ->     INSERT INTO txn_hash SELECT * FROM txn_btree;
+    ->
+    ->     -- 3. Update table statistics
+    ->     ANALYZE TABLE txn_heap, txn_hash, txn_btree;
+    ->
+    ->     -- 4. Log space & block metrics into experiment_results
+    ->     INSERT INTO experiment_results (
+    ->         DatasetSize, StrategyName, StorageEngine, RecordCount,
+    ->         DataSize_MB, IndexSize_MB, TotalSize_MB,
+    ->         Est_4KB_Data_Blocks, Est_4KB_Index_Blocks
+    ->     )
+    ->     SELECT
+    ->         target_rows,
+    ->         TABLE_NAME,
+    ->         ENGINE,
+    ->         TABLE_ROWS,
+    ->         ROUND(DATA_LENGTH / (1024 * 1024), 2),
+    ->         ROUND(INDEX_LENGTH / (1024 * 1024), 2),
+    ->         ROUND((DATA_LENGTH + INDEX_LENGTH) / (1024 * 1024), 2),
+    ->         CEIL(DATA_LENGTH / 4096),
+    ->         CEIL(INDEX_LENGTH / 4096)
+    ->     FROM information_schema.TABLES
+    ->     WHERE TABLE_SCHEMA = 'bank_txn_db'
+    ->       AND TABLE_NAME IN ('txn_heap', 'txn_hash', 'txn_btree');
+    -> END //
+Query OK, 0 rows affected (0.064 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql>
+mysql> -- ============================================================================
+Query OK, 0 rows affected (0.002 sec)
+
+mysql> -- STEP 4: EXECUTE SCALING BENCHMARKS (1,000 -> 10,000 -> 100,000 -> 1,000,000)
+Query OK, 0 rows affected (0.001 sec)
+
+mysql> -- ============================================================================
+Query OK, 0 rows affected (0.002 sec)
+
+mysql> CALL run_full_benchmark(1000);
++-----------------------+---------+----------+----------------------------------------------------------+
+| Table                 | Op      | Msg_type | Msg_text                                                 |
++-----------------------+---------+----------+----------------------------------------------------------+
+| bank_txn_db.txn_heap  | analyze | status   | OK                                                       |
+| bank_txn_db.txn_hash  | analyze | note     | The storage engine for the table doesn't support analyze |
+| bank_txn_db.txn_btree | analyze | status   | OK                                                       |
++-----------------------+---------+----------+----------------------------------------------------------+
+3 rows in set (1.594 sec)
+
+Query OK, 3 rows affected (1.842 sec)
+
+mysql> CALL run_full_benchmark(10000);
++-----------------------+---------+----------+----------------------------------------------------------+
+| Table                 | Op      | Msg_type | Msg_text                                                 |
++-----------------------+---------+----------+----------------------------------------------------------+
+| bank_txn_db.txn_heap  | analyze | status   | OK                                                       |
+| bank_txn_db.txn_hash  | analyze | note     | The storage engine for the table doesn't support analyze |
+| bank_txn_db.txn_btree | analyze | status   | OK                                                       |
++-----------------------+---------+----------+----------------------------------------------------------+
+3 rows in set (17.692 sec)
+
+Query OK, 3 rows affected (17.811 sec)
+
+mysql> CALL run_full_benchmark(100000);
++-----------------------+---------+----------+----------------------------------------------------------+
+| Table                 | Op      | Msg_type | Msg_text                                                 |
++-----------------------+---------+----------+----------------------------------------------------------+
+| bank_txn_db.txn_heap  | analyze | status   | OK                                                       |
+| bank_txn_db.txn_hash  | analyze | note     | The storage engine for the table doesn't support analyze |
+| bank_txn_db.txn_btree | analyze | status   | OK                                                       |
++-----------------------+---------+----------+----------------------------------------------------------+
+3 rows in set (2 min 44.298 sec)
+
+Query OK, 3 rows affected (2 min 44.585 sec)
+
+mysql> CALL run_full_benchmark(1000000);
